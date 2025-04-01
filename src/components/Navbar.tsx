@@ -21,7 +21,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
               />
             </Link>
           </div>
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-4  text-[14px]">
             <Link to="/" className="text-gray-600 hover:text-gray-900">Home</Link>
             <Link to="/blog" className="text-gray-600 hover:text-gray-900">Blog</Link>
             <Link to="/contact" className="text-gray-600 hover:text-gray-900">Contact</Link>

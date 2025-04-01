@@ -10,7 +10,7 @@ const HomePage: React.FC<HomePageProps> = ({ darkMode }) => {
   return (
     <>
       {/* Hero Section */}
-      <div className="relative h-[70vh] flex items-center justify-center overflow-hidden">
+      <div className="relative h-[80vh] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0 bg-sb-darker">
           <div className="absolute inset-0 bg-gradient-to-r from-sb-green/20 to-transparent animate-gradient-x"></div>
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-sb-dark/50 to-sb-darker"></div>
@@ -141,11 +141,16 @@ const HomePage: React.FC<HomePageProps> = ({ darkMode }) => {
             <div>
               <h2 className="text-3xl font-bold text-white mb-6">About Us</h2>
               <p className="text-gray-400 mb-4">
-                We're a team of passionate developers and engineers dedicated to making API management simple and secure.
-                With years of experience in enterprise solutions, we understand the challenges of modern API development.
+              At Striv7, we are redefining the future of technology consulting with a focus on agility, security, and intelligence. We specialize in high-tech consulting and strategic team augmentation, seamlessly integrating expert talent into your teams to accelerate innovation and delivery.
+
+Our core services include DevOps and DevSecOps transformation, helping organizations build secure, automated, and scalable infrastructure from the ground up. We bring deep expertise in cloud-native environments, CI/CD, and shift-left security—enabling faster, safer software delivery.
+
+Leading the way in AI Agentic Cybersecurity, we harness the power of autonomous AI agents to monitor, analyze, and respond to threats in real-time. By combining machine learning, behavior-based analysis, and human-in-the-loop workflows—often orchestrated through platforms like n8n—we empower modern SOCs with intelligent, adaptive defense capabilities.
+
               </p>
               <p className="text-gray-400 mb-6">
-                Our mission is to provide developers with the tools they need to build and manage world-class APIs.
+              Striv7 exists to help you build smarter systems, safer architectures, and stronger teams—driven by cutting-edge technology and a passion for solving complex challenges.
+
               </p>
               <div className="flex items-center space-x-4">
                 <Users className="h-12 w-12 text-sb-green" />

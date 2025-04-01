@@ -139,10 +139,10 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ darkMode }) => {
                   </div>
                 )}
               </div>
-              <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-white'} drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]`}>
                 {post.title}
               </h1>
-              <p className={`text-xl ${darkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+              <p className={`text-xl ${darkMode ? 'text-gray-200' : 'text-white'} drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]`}>
                 {post.excerpt}
               </p>
             </div>
