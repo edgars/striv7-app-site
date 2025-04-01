@@ -27,8 +27,8 @@ const HomePage: React.FC<HomePageProps> = ({ darkMode }) => {
               </span>
             </h1>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto animate-slide-up-delay">
-              Build, secure, and monitor your APIs with our powerful gateway platform.
-              Deploy anywhere with enterprise-grade security.
+            We’re a high-tech consulting company that puts people first — empowering talent to deliver exceptional 
+            results and creating joy for both our clients and our teams.
             </p>
             <div className="flex justify-center gap-4 animate-slide-up-delay-2">
               <button className="group bg-sb-green hover:bg-sb-green/90 text-black font-medium px-8 py-4 rounded-lg transition-all duration-200 flex items-center">
