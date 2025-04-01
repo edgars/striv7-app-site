@@ -20,10 +20,10 @@ const HomePage: React.FC<HomePageProps> = ({ darkMode }) => {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-32 animate-fade-in">
           <div className="text-center space-y-8">
             <h1 className="text-5xl md:text-7xl font-bold text-white tracking-tight animate-slide-up">
-              The Modern API Gateway
+              Accelerating technology
               <br />
               <span className="bg-gradient-to-r from-sb-green to-[#4FD1FF] text-transparent bg-clip-text">
-                for Developer Teams
+                & People performance 
               </span>
             </h1>
             <p className="text-xl text-gray-400 max-w-2xl mx-auto animate-slide-up-delay">
