@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import HomePage from './pages/HomePage';
 import SubPage from './pages/SubPage';
@@ -17,6 +17,8 @@ function App() {
     return savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches);
   });
 
+  const location = useLocation();
+
   useEffect(() => {
     if (darkMode) {
       document.documentElement.classList.add('dark');
@@ -26,6 +28,19 @@ function App() {
       localStorage.setItem('theme', 'light');
     }
   }, [darkMode]);
+
+  useEffect(() => {
+    // Check if we're navigating to the home page with a hash
+    if (location.pathname === '/' && location.hash) {
+      // Wait for the page to render
+      setTimeout(() => {
+        const element = document.querySelector(location.hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 100);
+    }
+  }, [location]);
 
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);

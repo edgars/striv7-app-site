@@ -40,7 +40,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, toggleDarkMode }) => {
               {darkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
             </button>
             <button className="bg-sb-green text-black font-medium px-4 py-2 rounded-lg hover:bg-sb-green/90 transition-colors duration-200">
-              Get Started
+              Talk to Us
             </button>
           </div>
         </div>
