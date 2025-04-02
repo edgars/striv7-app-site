@@ -8,7 +8,7 @@ author:
   bio: Founder of DevOps Bootcamp, a community with more than 100K active members, promoting webinars, live conferences and meetups covering many technical aspects. The most successful conference she has promoted is CyberFest, which brings together hundreds of CISOs and other high-level security professionals.
   profile_image: https://media.licdn.com/dms/image/v2/C4E03AQH8hHHhe9VVhQ/profile-displayphoto-shrink_100_100/profile-displayphoto-shrink_100_100/0/1529959646096?e=1749081600&v=beta&t=DWMbZle3rtSrQQpqyEJAmH5YMsaAZ9_mY3cIXcvFfwo
   linkedin_url: https://www.linkedin.com/in/amandasilvapinto/
-header_image: https://images.unsplash.com/photo-1586985564150-11ee04838034?auto=format&fit=crop&w=1200&h=630&q=80
+header_image: https://images.unsplash.com/photo-1686771416537-bf4a4f263d88?auto=format&fit=crop&w=1200&h=630&q=80
 tags:
   - Carreer
   - Interviews
