@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Linkedin } from 'lucide-react';
-import type { Author } from '../types/database';
+import type { Author } from '../types/blog';
 
 interface AuthorCardProps {
   author: Author;

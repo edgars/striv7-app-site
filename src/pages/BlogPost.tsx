@@ -2,9 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { supabase } from '../lib/supabase';
-import type { BlogPost } from '../types/database';
-import { Loader2, Calendar, User } from 'lucide-react';
+import { getPostBySlug } from '../lib/blog';
+import type { BlogPost } from '../types/blog';
+import { Calendar, User } from 'lucide-react';
 import AuthorCard from '../components/AuthorCard';
 import SEO from '../components/SEO';
 
@@ -27,23 +27,13 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ darkMode }) => {
       }
 
       try {
-        const { data, error: supabaseError } = await supabase
-          .from('blog_posts')
-          .select(`
-            *,
-            author:author_id (*)
-          `)
-          .eq('slug', slug)
-          .eq('is_published', true)
-          .single();
-
-        if (supabaseError) throw supabaseError;
-        if (!data) {
+        const postData = await getPostBySlug(slug);
+        if (!postData) {
           navigate('/404');
           return;
         }
 
-        setPost(data);
+        setPost(postData);
       } catch (err) {
         console.error('Error fetching post:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -57,41 +47,27 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ darkMode }) => {
 
   if (loading) {
     return (
-      <>
-        <SEO title="Loading Post" />
-        <div className={`min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-sb-darker' : 'bg-white'}`}>
-          <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
-            <Loader2 className={`h-8 w-8 animate-spin ${darkMode ? 'text-white' : 'text-gray-900'}`} />
-            <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading post...</p>
-          </div>
+      <div className={`min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-sb-darker' : 'bg-white'}`}>
+        <div className="max-w-4xl mx-auto flex flex-col items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-4 border-sb-green border-t-transparent rounded-full" />
+          <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading post...</p>
         </div>
-      </>
+      </div>
     );
   }
 
   if (error || !post) {
     return (
-      <>
-        <SEO title="Post Not Found" />
-        <div className={`min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-sb-darker text-white' : 'bg-white text-gray-900'}`}>
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Error</h1>
-            <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
-              {error || 'Post not found'}
-            </p>
-          </div>
+      <div className={`min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-sb-darker text-white' : 'bg-white text-gray-900'}`}>
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-2xl font-bold mb-4">Error</h1>
+          <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>
+            {error || 'Post not found'}
+          </p>
         </div>
-      </>
+      </div>
     );
   }
-
-  const keywords = [
-    'API Gateway',
-    'API Management',
-    'Developer Tools',
-    post.title.split(' '),
-    post.author?.name || 'DevAPI',
-  ].flat();
 
   return (
     <>
@@ -100,10 +76,9 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ darkMode }) => {
         description={post.excerpt}
         image={post.header_image}
         type="article"
-        publishedAt={post.published_at || post.created_at}
-        author={post.author?.name}
-        keywords={keywords}
-        canonicalUrl={`${import.meta.env.VITE_SITE_URL}/blog/${post.slug}`}
+        publishedAt={post.date}
+        author={post.author.name}
+        keywords={post.tags}
       />
       <div className={`min-h-screen ${darkMode ? 'bg-sb-darker' : 'bg-white'}`}>
         {/* Hero Section */}
@@ -120,31 +95,43 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ darkMode }) => {
                 <div className="flex items-center gap-2 text-sm">
                   <Calendar className="h-4 w-4 text-white" />
                   <time className="text-white">
-                    {new Date(post.published_at || post.created_at).toLocaleDateString('en-US', {
+                    {new Date(post.date).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
                       day: 'numeric'
                     })}
                   </time>
                 </div>
-                {post.author && (
-                  <div className="flex items-center gap-2">
-                    <User className="h-4 w-4 text-white" />
-                    <Link 
-                      to={`/author/${post.author.id}`}
-                      className="text-white hover:text-sb-green transition-colors duration-200"
-                    >
-                      {post.author.name}
-                    </Link>
-                  </div>
-                )}
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-white" />
+                  <Link 
+                    to={`/author/${post.author.id}`}
+                    className="text-white hover:text-sb-green transition-colors duration-200"
+                  >
+                    {post.author.name}
+                  </Link>
+                </div>
               </div>
-              <h1 className={`text-4xl md:text-5xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-white'} drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]`}>
+              <h1 className={`text-4xl md:text-5xl font-bold mb-4 text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]`}>
                 {post.title}
               </h1>
-              <p className={`text-xl ${darkMode ? 'text-gray-200' : 'text-white'} drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]`}>
+              <p className={`text-xl text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)]`}>
                 {post.excerpt}
               </p>
+              <div className="mt-4 flex flex-wrap gap-2">
+                {post.tags.map((tag) => (
+                  <span
+                    key={tag}
+                    className={`text-xs px-2 py-1 rounded-full ${
+                      darkMode
+                        ? 'bg-sb-slate text-gray-300'
+                        : 'bg-gray-200 text-gray-800'
+                    }`}
+                  >
+                    {tag}
+                  </span>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -158,18 +145,16 @@ const BlogPostPage: React.FC<BlogPostPageProps> = ({ darkMode }) => {
           </article>
 
           {/* Author Section */}
-          {post.author && (
-            <div className={`mt-16 pt-8 border-t ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
-              <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                About the Author
-              </h2>
-              <AuthorCard 
-                author={post.author} 
-                darkMode={darkMode}
-                showLink={true}
-              />
-            </div>
-          )}
+          <div className={`mt-16 pt-8 border-t ${darkMode ? 'border-gray-800' : 'border-gray-200'}`}>
+            <h2 className={`text-2xl font-bold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              About the Author
+            </h2>
+            <AuthorCard 
+              author={post.author} 
+              darkMode={darkMode}
+              showLink={false}
+            />
+          </div>
         </div>
       </div>
     </>

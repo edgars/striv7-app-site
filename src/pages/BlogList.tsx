@@ -1,16 +1,12 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
-import type { BlogPost } from '../types/database';
-import { Loader2, Calendar, Search, Clock } from 'lucide-react';
+import { Calendar, Search, Clock } from 'lucide-react';
+import { getAllPosts, getMonthlyArchive } from '../lib/blog';
+import type { BlogPost } from '../types/blog';
 import SEO from '../components/SEO';
 
 interface BlogListProps {
   darkMode: boolean;
-}
-
-interface MonthlyArchive {
-  [key: string]: BlogPost[];
 }
 
 const BlogList: React.FC<BlogListProps> = ({ darkMode }) => {
@@ -22,20 +18,8 @@ const BlogList: React.FC<BlogListProps> = ({ darkMode }) => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const { data, error: supabaseError } = await supabase
-          .from('blog_posts')
-          .select(`
-            *,
-            author:author_id (
-              name,
-              profile_image
-            )
-          `)
-          .eq('is_published', true)
-          .order('published_at', { ascending: false });
-
-        if (supabaseError) throw supabaseError;
-        setPosts(data || []);
+        const allPosts = await getAllPosts();
+        setPosts(allPosts);
       } catch (err) {
         console.error('Error fetching posts:', err);
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -54,67 +38,39 @@ const BlogList: React.FC<BlogListProps> = ({ darkMode }) => {
     return posts.filter(post => 
       post.title.toLowerCase().includes(query) ||
       post.excerpt.toLowerCase().includes(query) ||
-      post.author?.name.toLowerCase().includes(query)
+      post.author.name.toLowerCase().includes(query) ||
+      post.tags.some(tag => tag.toLowerCase().includes(query))
     );
   }, [posts, searchQuery]);
 
   // Get recent posts (last 5)
   const recentPosts = useMemo(() => posts.slice(0, 5), [posts]);
 
+  // Get monthly archive
+  const archivePosts = useMemo(() => getMonthlyArchive(posts), [posts]);
+
   // Get featured post (most recent)
   const featuredPost = useMemo(() => posts[0], [posts]);
 
-  // Organize posts by month for the last 3 years
-  const archivePosts = useMemo(() => {
-    const archive: MonthlyArchive = {};
-    const threeYearsAgo = new Date();
-    threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
-
-    posts.forEach(post => {
-      const postDate = new Date(post.published_at || post.created_at);
-      if (postDate >= threeYearsAgo) {
-        const monthYear = postDate.toLocaleString('en-US', { year: 'numeric', month: 'long' });
-        if (!archive[monthYear]) {
-          archive[monthYear] = [];
-        }
-        archive[monthYear].push(post);
-      }
-    });
-
-    return archive;
-  }, [posts]);
-
-  const keywords = useMemo(() => {
-    const baseKeywords = ['API Gateway', 'API Management', 'Developer Tools', 'Blog'];
-    const postKeywords = posts.slice(0, 5).map(post => post.title.split(' ')).flat();
-    return [...baseKeywords, ...postKeywords];
-  }, [posts]);
-
   if (loading) {
     return (
-      <>
-        <SEO title="Blog" />
-        <div className={`min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-sb-darker' : 'bg-white'}`}>
-          <div className="max-w-7xl mx-auto flex flex-col items-center justify-center">
-            <Loader2 className={`h-8 w-8 animate-spin ${darkMode ? 'text-white' : 'text-gray-900'}`} />
-            <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading blog posts...</p>
-          </div>
+      <div className={`min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-sb-darker' : 'bg-white'}`}>
+        <div className="max-w-7xl mx-auto flex flex-col items-center justify-center">
+          <div className="animate-spin h-8 w-8 border-4 border-sb-green border-t-transparent rounded-full" />
+          <p className={`mt-4 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Loading blog posts...</p>
         </div>
-      </>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <>
-        <SEO title="Error" />
-        <div className={`min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-sb-darker text-white' : 'bg-white text-gray-900'}`}>
-          <div className="max-w-7xl mx-auto">
-            <h1 className="text-2xl font-bold mb-4">Error</h1>
-            <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{error}</p>
-          </div>
+      <div className={`min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-sb-darker text-white' : 'bg-white text-gray-900'}`}>
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-2xl font-bold mb-4">Error</h1>
+          <p className={darkMode ? 'text-gray-300' : 'text-gray-600'}>{error}</p>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -125,8 +81,6 @@ const BlogList: React.FC<BlogListProps> = ({ darkMode }) => {
         description="Read our latest articles about API development, security, and best practices."
         type="website"
         image={featuredPost?.header_image}
-        keywords={keywords}
-        canonicalUrl={`${import.meta.env.VITE_SITE_URL}/blog`}
       />
       <div className={`min-h-screen pt-32 pb-20 px-4 sm:px-6 lg:px-8 ${darkMode ? 'bg-sb-darker' : 'bg-white'}`}>
         <div className="max-w-7xl mx-auto">
@@ -156,7 +110,7 @@ const BlogList: React.FC<BlogListProps> = ({ darkMode }) => {
               <div className="grid gap-8">
                 {filteredPosts.map((post) => (
                   <article
-                    key={post.id}
+                    key={post.slug}
                     className={`${
                       darkMode ? 'bg-sb-dark border-gray-800' : 'bg-white border-gray-200'
                     } border rounded-xl overflow-hidden shadow-lg transition-transform hover:scale-[1.02]`}
@@ -174,27 +128,25 @@ const BlogList: React.FC<BlogListProps> = ({ darkMode }) => {
                           <div className="flex items-center gap-2 text-sm">
                             <Calendar className="h-4 w-4" />
                             <time className={darkMode ? 'text-gray-400' : 'text-gray-600'}>
-                              {new Date(post.published_at || post.created_at).toLocaleDateString('en-US', {
+                              {new Date(post.date).toLocaleDateString('en-US', {
                                 year: 'numeric',
                                 month: 'long',
                                 day: 'numeric'
                               })}
                             </time>
                           </div>
-                          {post.author && (
-                            <div className="flex items-center gap-2">
-                              {post.author.profile_image && (
-                                <img
-                                  src={post.author.profile_image}
-                                  alt={post.author.name}
-                                  className="w-8 h-8 rounded-full object-cover"
-                                />
-                              )}
-                              <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                {post.author.name}
-                              </span>
-                            </div>
-                          )}
+                          <div className="flex items-center gap-2">
+                            {post.author.profile_image && (
+                              <img
+                                src={post.author.profile_image}
+                                alt={post.author.name}
+                                className="w-8 h-8 rounded-full object-cover"
+                              />
+                            )}
+                            <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                              {post.author.name}
+                            </span>
+                          </div>
                         </div>
                         <h2 className={`text-2xl font-bold mb-3 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                           {post.title}
@@ -202,6 +154,20 @@ const BlogList: React.FC<BlogListProps> = ({ darkMode }) => {
                         <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} line-clamp-2`}>
                           {post.excerpt}
                         </p>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {post.tags.map((tag) => (
+                            <span
+                              key={tag}
+                              className={`text-xs px-2 py-1 rounded-full ${
+                                darkMode
+                                  ? 'bg-sb-slate text-gray-300'
+                                  : 'bg-gray-200 text-gray-800'
+                              }`}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </Link>
                   </article>
@@ -228,7 +194,7 @@ const BlogList: React.FC<BlogListProps> = ({ darkMode }) => {
                 <div className="space-y-4">
                   {recentPosts.map((post) => (
                     <Link
-                      key={post.id}
+                      key={post.slug}
                       to={`/blog/${post.slug}`}
                       className="block group"
                     >
@@ -236,7 +202,7 @@ const BlogList: React.FC<BlogListProps> = ({ darkMode }) => {
                         {post.title}
                       </h3>
                       <time className={`text-xs ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                        {new Date(post.published_at || post.created_at).toLocaleDateString('en-US', {
+                        {new Date(post.date).toLocaleDateString('en-US', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
