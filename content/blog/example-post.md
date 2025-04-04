@@ -3,8 +3,8 @@ title: Getting Started with API Gateway
 date: '2025-03-31'
 excerpt: Learn how to set up and configure your first API Gateway with our comprehensive guide.
 author:
-  name: John Doe
-  id: john-doe
+  name: Frank Lindo
+  id: frank-lindo
   bio: Senior API Architect with 10+ years of experience in building scalable systems.
   profile_image: https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&h=400&q=80
   linkedin_url: https://linkedin.com/in/johndoe
